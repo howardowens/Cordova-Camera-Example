@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Cordova Camera Example</title>
+    
+<!-- jquery required for selectors -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.2.1/jquery.min.js"></script>
+
+<!-- the required line for cordova
+	plugins required are the current version of camera and file transfer.
+	https://github.com/apache/cordova-plugin-camera
+	https://cordova.apache.org/docs/en/latest/reference/cordova-plugin-file-transfer/ 
+	NOTE: This doesn't use all the camera options availabe, such as edit 
+			at the time of this writing, tested only with iOS -->
+    <script type="text/javascript" charset="utf-8" src="cordova.js"></script>
+    
+<!-- this script is built off a couple of different example scripts floating around online -->
+    <script type="text/javascript" charset="utf-8">
+
+    var pictureSource;   // picture source
+    var destinationType; // sets the format of returned value
+
+    // Wait for device API libraries to load
+    //
+    document.addEventListener("deviceready",onDeviceReady,false);
+
+    // device APIs are available
+    //
+    function onDeviceReady() {
+        pictureSource=navigator.camera.PictureSourceType;
+        destinationType=navigator.camera.DestinationType;
+    }
+
+
+    // Called when a photo is successfully retrieved
+    //
+    function onPhotoSuccess(imageURI) {
+    
+      // Get image handle
+      var largeImage = document.getElementById('largeImage');
+
+      // Unhide image elements
+      largeImage.style.display = 'block';
+
+      // Show the captured photo
+      // The in-line CSS rules are used to resize the image
+      largeImage.src = imageURI;
+
+
+    }
+
+
+ /* This function is called when you take a picture.
+ 	A not about setting targetWidth/targetHeight
+ 	I'm using this for online-publication only, so I don't need
+ 	print quality photos, per se.
+ 	The downside is that the version of the photo that will be saved
+ 	to the users album will be saved at this size.
+ 	We use saveToPhotoAlbum on the assumption that a user would want to save the photo.
+ */
+    //
+    function capturePhoto() {
+      // Take picture using device camera and retrieve image as base64-encoded string
+      navigator.camera.getPicture(onPhotoSuccess, onFail, { 
+          quality: 70,
+          destinationType: destinationType.imageURI, 
+          correctOrientation: true, 
+          targetWidth: 800, 
+          targetHeight: 800,
+          saveToPhotoAlbum: true  });
+    }
+
+
+    // A button will call this function
+    //
+    function getPhoto(source) {
+      // Retrieve image file location from specified source
+ 
+      navigator.camera.getPicture(onPhotoSuccess, onFail, { quality: 70,
+        destinationType: destinationType.FILE_URI,
+        sourceType: source,
+        correctOrientation: true, 
+        targetWidth: 800, 
+        targetHeight: 800 });
+
+
+    }
+
+    // Called if something bad happens.
+    //
+    function onFail(message) {
+      alert('Failed because: ' + message);
+    }
+
+/* Here's where file transfer comes into play.
+	We use the date variables to help create a unique file name to lesson the chance 
+	of name conflicts of the files saved on the server hard drive.
+	We also use a variable of user_id to help further help ensure the file name is unique
+	params are how these variables get passed to the server.
+	I haven't found any limit on the numbers of names of these variables I want to pass
+	with the photo.
+*/
+       function uploadPhoto() {
+          var d = new Date();
+          var n = d.getTime();
+          var user_id = 1;
+          var photoURI = $("#largeImage").attr("src");
+          var photoFilename = n + member_id + photoURI.substring(photoURI.lastIndexOf('/'));
+          var photoFilename = photoFilename.replace(/\//g, '');
+          var photoCaption = $("#photoCaption").val();
+          var options = new FileUploadOptions();
+            options.fileKey="file";
+            options.fileName=photoFilename;
+            options.mimeType="image/jpeg";
+
+
+        var params = {};
+          params.photoFilename = photoFilename;
+          params.photoCaption = photoCaption;
+          params.user_id = user_id;
+
+          options.params = params;
+
+            var ft = new FileTransfer();
+            ft.upload(photoURI, encodeURI("YOUR SERVER SIDE CODE URL"), win, fail, options);
+
+    
+        }
+
+        function win(r) {
+            console.log("Code = " + r.responseCode);
+            console.log("Response = " + r.response);
+            console.log("Sent = " + r.bytesSent);
+        }
+
+        function fail(error) {
+            alert("An error has occurred: Code = " + error.code);
+            console.log("upload error source " + error.source);
+            console.log("upload error target " + error.target);
+        }
+
+
+    </script>
+
+<!-- styling the buttons, image and caption input -->
+    <style type="text/css">
+.camera_btns {
+  -webkit-border-radius: 6;
+  -moz-border-radius: 6;
+  border-radius: 6px;
+  font-family: Arial;
+  color: #ffffff;
+  font-size: 20px;
+  background: #8f9294;
+  padding: 10px 40px 10px 40px;
+  text-decoration: none;
+  margin-bottom: 2%;
+    display: block;
+    margin-left: auto;
+    margin-right: auto
+}
+
+img {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    width: 20%;
+    height: auto;
+}
+
+#photoCaption {
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+}
+    </style>
+
+  </head>
+  <body>
+  <pre>
+
+
+
+  </pre>
+
+    <img style="display:none;" id="largeImage" src="" />
+    <br/>
+    <button class="camera_btns" onclick="capturePhoto();">Take Photo</button> <br/>
+    <button  class="camera_btns"  onclick="getPhoto(pictureSource.PHOTOLIBRARY);">Select Photo</button><br/>
+
+    <br/>
+    <button  class="camera_btns"  onclick="uploadPhoto();">Upload Selected Photo</button>
+    <input type="text" size="50" placeholder="Caption" id="photoCaption" name="photoCaption"/>
+
+
+  </body>
+</html>
