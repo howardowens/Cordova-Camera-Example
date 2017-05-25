@@ -10,11 +10,13 @@ Plugins:
   
   I'm using PhoneGap Build, so my config.xml file contains
   
-```  <plugin name="cordova-plugin-camera" />
+```  
+<plugin name="cordova-plugin-camera" />
 	<feature name="Camera">
     	<param name="ios-package" value="CDVCamera" />
-	</feature>```
+	</feature>
   
- ``` <gap:plugin name="cordova-plugin-file-transfer" source="npm"/>```
+ <gap:plugin name="cordova-plugin-file-transfer" source="npm"/>
+ ```
   
   See inline comments index.html for further information.
