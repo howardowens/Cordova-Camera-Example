@@ -131,6 +131,23 @@
             console.log("Code = " + r.responseCode);
             console.log("Response = " + r.response);
             console.log("Sent = " + r.bytesSent);
+            
+            
+            
+/* I havent been able to figure out how to more elegantly deal with confirmation 
+of user solution.
+The response sent back by the filetransfer plugin has been elusive for capturing 
+with a client-side script.
+For now, I'm using the cordova plugin for dialogs.
+*/   
+
+          navigator.notification.alert(
+          'Your Local Photo Uploaded Successfully',  // message
+          null,         // callback
+          'Thank You',            // title
+          'Close'                  // buttonName
+          );         
+
         }
 
         function fail(error) {
